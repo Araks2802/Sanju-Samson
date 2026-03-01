@@ -25,31 +25,55 @@ st.set_page_config(
 
 # ─── HELPER: load image as base64 ─────────────────────────────────────────────
 @st.cache_data
-def load_player_image(url: str) -> str:
-    """
-    Fetches a player image from a URL and returns it as a base64 data URI.
-    Falls back gracefully if the URL is unreachable.
-    Swap the URL constant below for any direct image URL you prefer.
-    """
+def load_image_from_file(path: str) -> str:
+    """Load a local image file and return as base64 data URI."""
     try:
-        resp = requests.get(url, timeout=5)
-        resp.raise_for_status()
-        img = Image.open(BytesIO(resp.content)).convert("RGBA")
-        img.thumbnail((220, 220), Image.LANCZOS)
+        img = Image.open(path).convert("RGBA")
+        img.thumbnail((300, 300), Image.LANCZOS)
         buf = BytesIO()
         img.save(buf, format="PNG")
         b64 = base64.b64encode(buf.getvalue()).decode()
         return f"data:image/png;base64,{b64}"
     except Exception:
-        return ""   # silently fall back to emoji placeholder
+        return ""
 
+@st.cache_data
+def load_image_from_url(url: str) -> str:
+    """Fetch a remote image and return as base64 data URI."""
+    try:
+        resp = requests.get(url, timeout=5)
+        resp.raise_for_status()
+        img = Image.open(BytesIO(resp.content)).convert("RGBA")
+        img.thumbnail((300, 300), Image.LANCZOS)
+        buf = BytesIO()
+        img.save(buf, format="PNG")
+        b64 = base64.b64encode(buf.getvalue()).decode()
+        return f"data:image/png;base64,{b64}"
+    except Exception:
+        return ""
 
-# ── Swap this URL for any better direct image link you have ──
-PLAYER_IMAGE_URL = (
-    "https://img1.hscicdn.com/image/upload/f_auto,t_h_100_2x/lsci/db/PICTURES/CMS/316700/316751.jpg"
+# ─────────────────────────────────────────────────────────────────────────────
+# HOW TO ADD SANJU SAMSON'S PHOTO:
+#
+#   OPTION 1 (Recommended — Local file):
+#     Save any photo of Sanju Samson as "sanju_samson.jpg" (or .png)
+#     in the SAME folder as this script, then set:
+#       LOCAL_IMAGE_PATH = "sanju_samson.jpg"
+#
+#   OPTION 2 (Remote URL):
+#     Paste any direct image URL below as REMOTE_IMAGE_URL.
+#     e.g. right-click a photo in your browser → "Copy image address"
+#
+#   The script tries LOCAL first, then REMOTE, then falls back to an emoji.
+# ─────────────────────────────────────────────────────────────────────────────
+LOCAL_IMAGE_PATH  = "sanju_samson.png"   # ← drop your image here
+REMOTE_IMAGE_URL  = ""                   # ← or paste a direct URL here
+
+player_img_src = (
+    load_image_from_file(LOCAL_IMAGE_PATH)
+    or load_image_from_url(REMOTE_IMAGE_URL)
+    or ""
 )
-
-player_img_src = load_player_image(PLAYER_IMAGE_URL)
 
 # ─── CUSTOM CSS ───────────────────────────────────────────────────────────────
 st.markdown("""
@@ -59,7 +83,9 @@ st.markdown("""
 html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; }
 .stApp { background: #060b16; }
 #MainMenu, footer, header { visibility: hidden; }
-.block-container { padding-top: 2rem; padding-bottom: 3rem; max-width: 1180px; }
+.block-container { padding-top: 2rem; padding-bottom: 3rem; max-width: 100% !important; padding-left: 2rem !important; padding-right: 2rem !important; }
+section[data-testid="stAppViewContainer"] > div { max-width: 100% !important; }
+div[data-testid="stMainBlockContainer"] { max-width: 100% !important; padding-left: 2rem !important; padding-right: 2rem !important; }
 
 /* ── Hero ── */
 .hero-wrap {
@@ -76,7 +102,7 @@ html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; }
 .hero-left { display: flex; align-items: center; gap: 28px; }
 
 .player-img-wrap img {
-    width: 130px; height: 130px;
+    width: 160px; height: 160px;
     border-radius: 50%;
     object-fit: cover; object-position: top center;
     border: 3px solid #f5c842;
@@ -96,15 +122,15 @@ html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; }
     padding: 5px 16px; border-radius: 100px; margin-bottom: 12px;
 }
 .hero-name {
-    font-family: 'Bebas Neue', cursive; font-size: 68px; line-height: 0.92;
+    font-family: 'Bebas Neue', cursive; font-size: 80px; line-height: 0.92;
     color: #f7f0e3; margin: 0 0 10px 0;
 }
 .hero-name span { color: #f5c842; }
-.hero-sub { font-size: 11px; color: #5a6880; letter-spacing: 3px; text-transform: uppercase; }
+.hero-sub { font-size: 12px; color: #5a6880; letter-spacing: 3px; text-transform: uppercase; }
 
 .score-block { text-align: right; flex-shrink: 0; }
 .score-big {
-    font-family: 'Bebas Neue', cursive; font-size: 100px; line-height: 1;
+    font-family: 'Bebas Neue', cursive; font-size: 120px; line-height: 1;
     color: #f5c842; text-shadow: 0 0 60px rgba(245,200,66,0.35);
 }
 .score-meta { font-size: 17px; color: #5a6880; }
@@ -128,7 +154,7 @@ html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; }
     background: rgba(255,255,255,0.04); border: 1px solid rgba(245,200,66,0.18);
     border-radius: 14px; padding: 22px 16px; text-align: center;
 }
-.stat-val { font-family:'Bebas Neue',cursive; font-size:46px; line-height:1; color:#f7f0e3; }
+.stat-val { font-family:'Bebas Neue',cursive; font-size:54px; line-height:1; color:#f7f0e3; }
 .stat-val.gold { color:#f5c842; }
 .stat-val.teal { color:#00c9a7; }
 .stat-lbl { font-size:10px; color:#5a6880; letter-spacing:2px; text-transform:uppercase; margin-top:6px; }
@@ -145,11 +171,16 @@ html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; }
 .phase-sr    { font-size:12px; color:#00c9a7; font-weight:600; margin-top:4px; }
 
 /* ── Bowler cards ── */
-/* 4 cols for 8 cards: row of 4 + row of 3 centred */
 .bowler-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 14px;
+    gap: 16px;
+}
+.bowler-row-bottom {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 16px;
 }
 
 .bowler-card {
@@ -188,14 +219,7 @@ html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; }
 .bc-footer  { display:flex; justify-content:space-between; font-size:11px; color:#5a6880; }
 .bc-footer strong { color:#c8d4e8; }
 
-/* second row of 3 — centre them */
-.bowler-row-bottom {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-    margin-top: 14px;
-}
-
+/* summary strip */
 .summary-strip {
     border-top:1px solid rgba(245,200,66,0.12); padding-top:14px; margin-top:6px;
     display:flex; justify-content:space-between; font-size:12px; color:#5a6880;
@@ -452,42 +476,7 @@ st.markdown(f"""
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# ─── SCORE PROGRESSION ────────────────────────────────────────────────────────
-st.markdown('<div class="panel-title">Score Progression</div>', unsafe_allow_html=True)
 
-fig = go.Figure()
-fig.add_trace(go.Scatter(
-    x=progression["Ball"], y=progression["Score"],
-    fill="tozeroy", fillcolor="rgba(245,200,66,0.07)",
-    line=dict(color="rgba(0,0,0,0)"),
-    showlegend=False, hoverinfo="skip",
-))
-fig.add_trace(go.Scatter(
-    x=progression["Ball"], y=progression["Score"],
-    mode="lines+markers",
-    line=dict(color="#f5c842", width=3, shape="spline", smoothing=0.8),
-    marker=dict(color="#f5c842", size=7, line=dict(color="#060b16", width=2)),
-    hovertemplate="Ball %{x}: <b>%{y} runs</b><extra></extra>",
-    showlegend=False,
-))
-fig.update_layout(
-    paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-    height=190, margin=dict(l=40, r=20, t=20, b=30),
-    xaxis=dict(title="Ball", showgrid=True, gridcolor="rgba(255,255,255,0.04)",
-               color="#5a6880", tickfont=dict(color="#5a6880"), range=[0,51], zeroline=False),
-    yaxis=dict(title="Runs", showgrid=True, gridcolor="rgba(255,255,255,0.04)",
-               color="#5a6880", tickfont=dict(color="#5a6880"), range=[0,110], zeroline=False),
-    annotations=[
-        dict(x=26, y=53, text="50 (26b)", showarrow=True, arrowhead=2,
-             arrowcolor="#00c9a7", font=dict(color="#00c9a7", size=11), ax=0, ay=-28),
-        dict(x=50, y=97, text="97* (50b)", showarrow=True, arrowhead=2,
-             arrowcolor="#f5c842", font=dict(color="#f5c842", size=11), ax=-10, ay=-28),
-    ],
-    font=dict(family="DM Sans"),
-)
-st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
-
-st.markdown("<br>", unsafe_allow_html=True)
 
 # ─── MILESTONES + MATCH CONTEXT ──────────────────────────────────────────────
 left, right = st.columns([3, 2])
