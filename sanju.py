@@ -1,1286 +1,817 @@
 """
 Sanju Samson – 97* vs West Indies | T20 World Cup 2026
-Streamlit Dashboard — Redesigned UI/UX
+REVAMP v3 — Cinematic Broadcast Aesthetic
 
-Run with:
-    pip install streamlit plotly pandas requests pillow
-    streamlit run samson_dashboard.py
+pip install streamlit plotly pandas requests pillow
+streamlit run samson_dashboard.py
 """
 
 import streamlit as st
 import plotly.graph_objects as go
 import pandas as pd
+import numpy as np
 import requests
 from io import BytesIO
 from PIL import Image
 import base64
 
-# ─── PAGE CONFIG ──────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="Sanju Samson – 97* | T20 WC 2026",
+    page_title="Sanju Samson 97* | T20 WC 2026",
     page_icon="🏏",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
 
-# ─── IMAGE LOADER ─────────────────────────────────────────────────────────────
+# ─── IMAGE ────────────────────────────────────────────────────────────────────
 @st.cache_data
-def load_image_from_file(path: str) -> str:
+def load_img_file(path):
     try:
         img = Image.open(path).convert("RGBA")
-        img.thumbnail((320, 320), Image.LANCZOS)
-        buf = BytesIO()
-        img.save(buf, format="PNG")
+        img.thumbnail((340, 340), Image.LANCZOS)
+        buf = BytesIO(); img.save(buf, format="PNG")
         return f"data:image/png;base64,{base64.b64encode(buf.getvalue()).decode()}"
-    except Exception:
-        return ""
+    except: return ""
 
 @st.cache_data
-def load_image_from_url(url: str) -> str:
+def load_img_url(url):
     try:
-        resp = requests.get(url, timeout=5)
-        resp.raise_for_status()
-        img = Image.open(BytesIO(resp.content)).convert("RGBA")
-        img.thumbnail((320, 320), Image.LANCZOS)
-        buf = BytesIO()
-        img.save(buf, format="PNG")
+        r = requests.get(url, timeout=5); r.raise_for_status()
+        img = Image.open(BytesIO(r.content)).convert("RGBA")
+        img.thumbnail((340, 340), Image.LANCZOS)
+        buf = BytesIO(); img.save(buf, format="PNG")
         return f"data:image/png;base64,{base64.b64encode(buf.getvalue()).decode()}"
-    except Exception:
-        return ""
+    except: return ""
 
-# ── DROP YOUR IMAGE HERE ──────────────────────────────────────────────────────
-# Save Sanju Samson's photo as "sanju_samson.jpg" in the same folder, OR
-# paste a direct image URL into REMOTE_IMAGE_URL below.
 LOCAL_IMAGE_PATH = "sanju_samson.png"
 REMOTE_IMAGE_URL = ""
-
-player_img_src = (
-    load_image_from_file(LOCAL_IMAGE_PATH)
-    or load_image_from_url(REMOTE_IMAGE_URL)
-    or ""
-)
-
-# ─── CSS ──────────────────────────────────────────────────────────────────────
-st.markdown("""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,600;0,800;1,300&family=Barlow:wght@300;400;500;600&family=Playfair+Display:ital,wght@1,600&display=swap');
-
-/* ── Reset & Base ── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body, [class*="css"] { font-family: 'Barlow', sans-serif; }
-.stApp {
-    background: #07090f;
-    background-image:
-        radial-gradient(ellipse 70% 50% at 10% 0%, rgba(255,200,40,0.07) 0%, transparent 55%),
-        radial-gradient(ellipse 50% 40% at 90% 100%, rgba(0,180,130,0.06) 0%, transparent 50%);
-}
-#MainMenu, footer, header { visibility: hidden; }
-.block-container {
-    padding: 1.5rem 2.5rem 4rem !important;
-    max-width: 100% !important;
-}
-section[data-testid="stAppViewContainer"] > div { max-width: 100% !important; }
-div[data-testid="stMainBlockContainer"] {
-    max-width: 100% !important;
-    padding-left: 2.5rem !important;
-    padding-right: 2.5rem !important;
-}
-
-/* ── Divider ── */
-.section-gap { margin-top: 2rem; margin-bottom: 0.5rem; }
-
-/* ── Section label ── */
-.section-label {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
-}
-.section-label-line {
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(90deg, rgba(255,200,40,0.4), transparent);
-}
-.section-label-text {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    color: #f5c842;
-    white-space: nowrap;
-}
-
-/* ── HERO ── */
-.hero {
-    position: relative;
-    overflow: hidden;
-    border-radius: 20px;
-    border: 1px solid rgba(255,200,40,0.15);
-    background: linear-gradient(135deg, #0d1220 0%, #0a0f1a 60%, #0d1a12 100%);
-    padding: 0;
-    margin-bottom: 1.5rem;
-    display: flex;
-    min-height: 240px;
-}
-
-.hero-accent-bar {
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, #f5c842 0%, #00c9a7 50%, #f5c842 100%);
-}
-
-.hero-bg-number {
-    position: absolute;
-    right: -20px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 280px;
-    font-weight: 800;
-    color: rgba(245,200,66,0.04);
-    line-height: 1;
-    pointer-events: none;
-    user-select: none;
-}
-
-.hero-left {
-    display: flex;
-    align-items: center;
-    gap: 32px;
-    padding: 36px 40px;
-    flex: 1;
-    position: relative;
-    z-index: 1;
-}
-
-.hero-img-container {
-    position: relative;
-    flex-shrink: 0;
-}
-
-.hero-img-ring {
-    position: absolute;
-    inset: -6px;
-    border-radius: 50%;
-    background: conic-gradient(from 0deg, #f5c842, #00c9a7, #f5c842);
-    animation: spin 8s linear infinite;
-    opacity: 0.7;
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.hero-img-inner {
-    position: relative;
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    overflow: hidden;
-    background: rgba(245,200,66,0.08);
-    border: 3px solid #07090f;
-    z-index: 1;
-}
-
-.hero-img-inner img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: top center;
-    display: block;
-}
-
-.hero-img-emoji {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 60px;
-}
-
-.hero-info { flex: 1; }
-
-.hero-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(245,200,66,0.1);
-    border: 1px solid rgba(245,200,66,0.3);
-    color: #f5c842;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    padding: 4px 14px;
-    border-radius: 2px;
-    margin-bottom: 14px;
-}
-
-.hero-tag-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: #f5c842;
-    animation: blink 1.5s ease-in-out infinite;
-}
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
-
-.hero-name {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 76px;
-    font-weight: 800;
-    line-height: 0.88;
-    color: #f0ece0;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: 14px;
-}
-.hero-name em {
-    font-style: italic;
-    font-weight: 300;
-    color: #f5c842;
-    font-size: 0.85em;
-    letter-spacing: 6px;
-    display: block;
-}
-
-.hero-meta {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
-}
-.hero-meta-item {
-    font-size: 11px;
-    color: #4a5a70;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    font-weight: 600;
-}
-.hero-meta-sep { color: #1e2a38; font-size: 14px; }
-
-.hero-right {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    justify-content: center;
-    padding: 36px 44px 36px 20px;
-    position: relative;
-    z-index: 1;
-    border-left: 1px solid rgba(255,255,255,0.04);
-    min-width: 280px;
-}
-
-.hero-score {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 130px;
-    font-weight: 800;
-    line-height: 0.85;
-    color: #f5c842;
-    letter-spacing: -2px;
-    text-shadow: 0 0 80px rgba(245,200,66,0.3);
-}
-
-.hero-score sup {
-    font-size: 0.35em;
-    color: #e8a020;
-    vertical-align: super;
-}
-
-.hero-score-sub {
-    font-size: 13px;
-    color: #4a5a70;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    text-align: right;
-    margin-top: 4px;
-    font-weight: 600;
-}
-
-.hero-sr {
-    margin-top: 14px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    justify-content: flex-end;
-}
-
-.hero-sr-label {
-    font-size: 10px;
-    color: #4a5a70;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-}
-
-.hero-sr-value {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 28px;
-    font-weight: 700;
-    color: #00c9a7;
-}
-
-.potm-badge {
-    margin-top: 16px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: linear-gradient(135deg, #f5c842, #e8a020);
-    color: #000;
-    font-size: 9px;
-    font-weight: 800;
-    letter-spacing: 2.5px;
-    text-transform: uppercase;
-    padding: 6px 16px;
-    border-radius: 2px;
-}
-
-/* ── RECORD BANNER ── */
-.record-banner {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    background: linear-gradient(90deg, rgba(232,64,64,0.08), transparent);
-    border: 1px solid rgba(232,64,64,0.25);
-    border-left: 3px solid #e84040;
-    border-radius: 0 10px 10px 0;
-    padding: 12px 20px;
-    margin-bottom: 1.5rem;
-}
-.record-icon { font-size: 18px; flex-shrink: 0; }
-.record-text { font-size: 12px; color: #c07070; line-height: 1.6; }
-.record-text strong { color: #f0ece0; }
-
-.stat-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 12px;
-    margin-bottom: 1.5rem;
-}
-
-.stat-card {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 12px;
-    padding: 18px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    position: relative;
-    overflow: hidden;
-    transition: border-color 0.25s, transform 0.25s;
-    white-space: nowrap;
-}
-.stat-card:hover {
-    border-color: rgba(245,200,66,0.3);
-    transform: translateY(-3px);
-}
-.stat-card::before {
-    content: '';
-    position: absolute;
-    left: 0; top: 20%; bottom: 20%;
-    width: 2px;
-    background: var(--accent, #f5c842);
-    border-radius: 2px;
-    opacity: 0.6;
-}
-
-.stat-left {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.stat-icon {
-    font-size: 20px;
-    line-height: 1;
-}
-
-.stat-lbl {
-    font-size: 9px;
-    color: #3a4a5e;
-    letter-spacing: 2.5px;
-    text-transform: uppercase;
-    font-weight: 600;
-    white-space: nowrap;
-}
-
-.stat-val {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 52px;
-    font-weight: 800;
-    line-height: 1;
-    color: #f0ece0;
-    flex-shrink: 0;
-}
-.stat-val.gold { color: #f5c842; }
-.stat-val.teal { color: #00c9a7; }
-.stat-val.blue { color: #60a5fa; }
-
-/* ── PHASE CARDS ── */
-.phase-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-bottom: 1.5rem;
-}
-
-.phase-card {
-    background: rgba(255,255,255,0.025);
-    border: 1px solid rgba(255,255,255,0.05);
-    border-radius: 12px;
-    padding: 20px 24px;
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    gap: 24px;
-}
-
-.phase-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; bottom: 0;
-    width: 3px;
-}
-.phase-card.pp::before  { background: linear-gradient(180deg, #f5c842, #e8a020); }
-.phase-card.mid::before { background: linear-gradient(180deg, #60a5fa, #3b82f6); }
-.phase-card.dt::before  { background: linear-gradient(180deg, #f97316, #ea580c); }
-
-.phase-score {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 72px;
-    font-weight: 800;
-    line-height: 1;
-    flex-shrink: 0;
-}
-.phase-card.pp  .phase-score { color: #f5c842; }
-.phase-card.mid .phase-score { color: #60a5fa; }
-.phase-card.dt  .phase-score { color: #f97316; }
-
-.phase-right {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-}
-
-.phase-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 8px;
-}
-
-.phase-overs {
-    font-size: 9px;
-    color: #3a4a5e;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    font-weight: 600;
-}
-
-.phase-name {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 22px;
-    font-weight: 700;
-    color: #f0ece0;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 2px;
-    line-height: 1;
-}
-
-.phase-sr-pill {
-    background: rgba(0,201,167,0.12);
-    border: 1px solid rgba(0,201,167,0.2);
-    color: #00c9a7;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    padding: 4px 10px;
-    border-radius: 100px;
-    white-space: nowrap;
-}
-
-.phase-detail {
-    font-size: 11px;
-    color: #3a4a5e;
-    display: flex;
-    gap: 14px;
-    flex-wrap: nowrap;
-    align-items: center;
-    white-space: nowrap;
-}
-
-.phase-detail-item {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    flex-shrink: 0;
-}
-.phase-detail-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    flex-shrink: 0;
-}
-
-/* ── BOWLER CARDS ── */
-.bowler-grid-top {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    margin-bottom: 12px;
-}
-.bowler-grid-bot {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-}
-
-.bowler-card {
-    background: rgba(255,255,255,0.025);
-    border: 1px solid rgba(255,255,255,0.05);
-    border-radius: 12px;
-    padding: 16px;
-    position: relative;
-    overflow: hidden;
-    transition: border-color 0.2s, transform 0.2s;
-}
-.bowler-card:hover {
-    border-color: rgba(245,200,66,0.25);
-    transform: translateY(-2px);
-}
-
-.bowler-card .top-stripe {
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-}
-.bowler-card.spin   .top-stripe { background: linear-gradient(90deg,#a78bfa,#7c3aed); }
-.bowler-card.fast   .top-stripe { background: linear-gradient(90deg,#f5c842,#f97316); }
-.bowler-card.medium .top-stripe { background: linear-gradient(90deg,#00c9a7,#0096c7); }
-
-.bc-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    margin-top: 6px;
-}
-
-.bc-name {
-    font-size: 14px;
-    font-weight: 700;
-    color: #f0ece0;
-    line-height: 1.2;
-}
-
-.bc-type-pill {
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 3px 8px;
-    border-radius: 100px;
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-.bowler-card.spin   .bc-type-pill { background: rgba(167,139,250,0.15); color: #a78bfa; }
-.bowler-card.fast   .bc-type-pill { background: rgba(245,200,66,0.1);   color: #f5c842; }
-.bowler-card.medium .bc-type-pill { background: rgba(0,201,167,0.1);    color: #00c9a7; }
-
-.bc-team-line {
-    font-size: 10px;
-    color: #2e3d50;
-    margin-bottom: 12px;
-    font-weight: 500;
-}
-
-.bc-stats {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 4px;
-    background: rgba(0,0,0,0.2);
-    border-radius: 8px;
-    padding: 10px 6px;
-}
-
-.bc-stat { text-align: center; }
-
-.bc-stat-val {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 28px;
-    font-weight: 700;
-    line-height: 1;
-    color: #f0ece0;
-}
-.bc-stat-val.runs { color: #f5c842; font-size: 32px; }
-.bc-stat-val.four { color: #60a5fa; }
-.bc-stat-val.six  { color: #00c9a7; }
-.bc-stat-val.zero { color: #2e3d50; }
-
-.bc-stat-lbl {
-    font-size: 8px;
-    color: #2e3d50;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    margin-top: 3px;
-    font-weight: 600;
-}
-
-.bc-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 10px;
-    padding-top: 8px;
-    border-top: 1px solid rgba(255,255,255,0.04);
-}
-
-.bc-sr {
-    font-size: 11px;
-    color: #2e3d50;
-    font-weight: 500;
-}
-.bc-sr strong { font-weight: 700; }
-
-.bc-dots {
-    font-size: 10px;
-    color: #2e3d50;
-}
-
-/* ── SUMMARY STRIP ── */
-.summary-strip {
-    display: flex;
-    gap: 0;
-    border: 1px solid rgba(255,255,255,0.05);
-    border-radius: 10px;
-    overflow: hidden;
-    margin-top: 14px;
-}
-.summary-item {
-    flex: 1;
-    text-align: center;
-    padding: 12px 8px;
-    border-right: 1px solid rgba(255,255,255,0.04);
-    background: rgba(255,255,255,0.02);
-}
-.summary-item:last-child { border-right: none; }
-.summary-val {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 22px;
-    font-weight: 700;
-    color: #f5c842;
-    line-height: 1;
-}
-.summary-lbl {
-    font-size: 9px;
-    color: #2e3d50;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-top: 4px;
-    font-weight: 600;
-}
-
-/* ── SCORE PROGRESSION ── */
-.chart-container {
-    background: rgba(255,255,255,0.02);
-    border: 1px solid rgba(255,255,255,0.05);
-    border-radius: 12px;
-    padding: 20px 16px 8px;
-    margin-bottom: 1.5rem;
-}
-
-/* ── MILESTONES ── */
-.milestone-list { position: relative; }
-.milestone-list::before {
-    content: '';
-    position: absolute;
-    left: 4px;
-    top: 8px; bottom: 8px;
-    width: 1px;
-    background: linear-gradient(180deg, #f5c842, rgba(245,200,66,0.1));
-}
-
-.milestone {
-    display: flex;
-    gap: 16px;
-    align-items: flex-start;
-    padding: 0 0 20px 0;
-    position: relative;
-}
-.milestone:last-child { padding-bottom: 0; }
-
-.m-dot-wrap {
-    position: relative;
-    flex-shrink: 0;
-    width: 10px;
-    margin-top: 5px;
-}
-.m-dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    background: #f5c842;
-    box-shadow: 0 0 8px rgba(245,200,66,0.5);
-    position: relative;
-    z-index: 1;
-}
-.m-dot.teal {
-    background: #00c9a7;
-    box-shadow: 0 0 8px rgba(0,201,167,0.5);
-}
-
-.m-content { flex: 1; }
-
-.m-ball {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 2px;
-    color: #3a4a5e;
-    text-transform: uppercase;
-    margin-bottom: 2px;
-}
-
-.m-title {
-    font-size: 14px;
-    font-weight: 700;
-    color: #f0ece0;
-    margin-bottom: 2px;
-}
-
-.m-desc {
-    font-size: 12px;
-    color: #3a4a5e;
-    line-height: 1.5;
-    font-weight: 400;
-}
-
-/* ── QUOTE ── */
-.quote-card {
-    background: rgba(255,255,255,0.02);
-    border: 1px solid rgba(255,255,255,0.05);
-    border-top: 2px solid #f5c842;
-    border-radius: 0 0 12px 12px;
-    padding: 24px;
-    margin-bottom: 14px;
-}
-.quote-marks {
-    font-family: 'Playfair Display', serif;
-    font-size: 60px;
-    line-height: 0.5;
-    color: rgba(245,200,66,0.2);
-    margin-bottom: 8px;
-}
-.quote-text {
-    font-family: 'Playfair Display', serif;
-    font-style: italic;
-    font-size: 14px;
-    color: #8a9ab8;
-    line-height: 1.8;
-    margin-bottom: 14px;
-}
-.quote-attr {
-    font-size: 10px;
-    color: #3a4a5e;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    font-weight: 600;
-}
-
-/* ── MATCH CONTEXT ── */
-.match-ctx {
-    background: rgba(255,255,255,0.02);
-    border: 1px solid rgba(255,255,255,0.05);
-    border-radius: 12px;
-    overflow: hidden;
-}
-.match-ctx-header {
-    background: rgba(245,200,66,0.06);
-    border-bottom: 1px solid rgba(245,200,66,0.1);
-    padding: 12px 20px;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: #f5c842;
-}
-.match-ctx-body { padding: 20px; }
-
-.ctx-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1px;
-    background: rgba(255,255,255,0.04);
-    border-radius: 8px;
-    overflow: hidden;
-    margin-bottom: 16px;
-}
-.ctx-cell {
-    background: rgba(255,255,255,0.02);
-    padding: 14px 16px;
-    text-align: center;
-}
-.ctx-lbl {
-    font-size: 9px;
-    color: #2e3d50;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    font-weight: 600;
-    margin-bottom: 4px;
-}
-.ctx-val {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 36px;
-    font-weight: 800;
-    line-height: 1;
-    color: #f0ece0;
-}
-
-.ctx-semi {
-    font-size: 11px;
-    color: #2e3d50;
-    line-height: 1.6;
-    text-align: center;
-}
-.ctx-semi strong { color: #f5c842; }
-
-/* ── FOOTER ── */
-.dash-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 2.5rem;
-    padding-top: 1rem;
-    border-top: 1px solid rgba(255,255,255,0.04);
-    flex-wrap: wrap;
-    gap: 12px;
-}
-.footer-left  { font-size: 11px; color: #2e3d50; line-height: 1.8; }
-.footer-right {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 16px;
-    font-weight: 700;
-    letter-spacing: 3px;
-    color: rgba(245,200,66,0.4);
-}
-</style>
-""", unsafe_allow_html=True)
+player_img = load_img_file(LOCAL_IMAGE_PATH) or load_img_url(REMOTE_IMAGE_URL) or ""
 
 # ─── DATA ─────────────────────────────────────────────────────────────────────
-bowlers_row1 = [
-    {"name": "Shamar Joseph",    "cls": "fast",   "type": "Right-arm Fast",
-     "team_r": 42, "team_w": 2, "team_ov": "4.0",
-     "runs": 12, "balls": 8, "fours": 2, "sixes": 0, "dots": 2},
-    {"name": "Jason Holder",     "cls": "medium", "type": "Fast-medium",
-     "team_r": 38, "team_w": 2, "team_ov": "4.0",
-     "runs": 17, "balls": 8,  "fours": 3, "sixes": 0, "dots": 0},
-    {"name": "Romario Shepherd", "cls": "fast",   "type": "Right-arm Fast",
-     "team_r": 34, "team_w": 0, "team_ov": "2.2",
-     "runs": 24, "balls": 9,  "fours": 2, "sixes": 2, "dots": 1},
-    {"name": "Matthew Forde",    "cls": "medium", "type": "Right-arm Medium",
-     "team_r": 22, "team_w": 0, "team_ov": "3.0",
-     "runs": 7, "balls": 9,  "fours": 1, "sixes": 0, "dots": 4},
-]
-bowlers_row2 = [
-    {"name": "Akeal Hosein",     "cls": "spin",   "type": "Left-arm Spin",
-     "team_r": 22, "team_w": 1, "team_ov": "2.0",
-     "runs": 17, "balls": 5,  "fours": 1, "sixes": 2, "dots": 1},
-    {"name": "Gudakesh Motie",   "cls": "spin",   "type": "Left-arm Spin",
-     "team_r": 18, "team_w": 0, "team_ov": "2.0",
-     "runs": 12, "balls": 7,  "fours": 2, "sixes": 0, "dots": 1},
-    {"name": "Roston Chase",     "cls": "spin",   "type": "Off-spin",
-     "team_r": 18, "team_w": 0, "team_ov": "2.0",
-     "runs": 8,  "balls": 5,  "fours": 1, "sixes": 0, "dots": 0},
+bowlers = [
+    {"name":"Shamar Joseph",    "cls":"fast",   "type":"Right-arm Fast",   "team_r":42,"team_w":2,"team_ov":"4.0","runs":12,"balls":8, "fours":2,"sixes":0,"dots":2},
+    {"name":"Jason Holder",     "cls":"medium", "type":"Fast-medium",      "team_r":38,"team_w":2,"team_ov":"4.0","runs":17,"balls":8, "fours":3,"sixes":0,"dots":0},
+    {"name":"Romario Shepherd", "cls":"fast",   "type":"Right-arm Fast",   "team_r":34,"team_w":0,"team_ov":"2.2","runs":24,"balls":9, "fours":2,"sixes":2,"dots":1},
+    {"name":"Matthew Forde",    "cls":"medium", "type":"Right-arm Medium", "team_r":22,"team_w":0,"team_ov":"3.0","runs":7, "balls":9, "fours":1,"sixes":0,"dots":4},
+    {"name":"Akeal Hosein",     "cls":"spin",   "type":"Left-arm Spin",    "team_r":22,"team_w":1,"team_ov":"2.0","runs":17,"balls":5, "fours":1,"sixes":2,"dots":1},
+    {"name":"Gudakesh Motie",   "cls":"spin",   "type":"Left-arm Spin",    "team_r":18,"team_w":0,"team_ov":"2.0","runs":12,"balls":7, "fours":2,"sixes":0,"dots":1},
+    {"name":"Roston Chase",     "cls":"spin",   "type":"Off-spin",         "team_r":18,"team_w":0,"team_ov":"2.0","runs":8, "balls":5, "fours":1,"sixes":0,"dots":0},
 ]
 
 phases = [
-    {"key": "pp",  "name": "Powerplay", "overs": "Overs 1–6",     "runs": 24, "balls": 13, "fours": 3, "sixes": 2, "sr": 185},
-    {"key": "mid", "name": "Middle",    "overs": "Overs 7–15",    "runs": 53, "balls": 27, "fours": 7, "sixes": 1, "sr": 196},
-    {"key": "dt",  "name": "Death",     "overs": "Overs 16–19.2", "runs": 20, "balls": 10, "fours": 2, "sixes": 1, "sr": 200},
+    {"key":"pp",  "label":"Overs 1–6",     "name":"Powerplay","runs":24,"balls":13,"fours":2,"sixes":2,"sr":185},
+    {"key":"mid", "label":"Overs 7–15",    "name":"Middle",   "runs":55,"balls":30,"fours":8,"sixes":1,"sr":183},
+    {"key":"dt",  "label":"Overs 16–19.2", "name":"Death",    "runs":18,"balls":7, "fours":2,"sixes":1,"sr":257},
 ]
 
-progression = pd.DataFrame({
-    "Ball":  [0,  3,  6, 10, 16, 22, 26, 32, 38, 44, 48, 50],
-    "Score": [0, 15, 20, 24, 35, 44, 53, 63, 72, 82, 91, 97],
+partnerships = [
+    {"wkt":"1st","p2":"Abhishek", "runs":29, "balls":18, "samson":19, "overs":"1–2.x"},
+    {"wkt":"2nd","p2":"Ishan",    "runs":12, "balls":9,  "samson":7,  "overs":"3–4.x"},
+    {"wkt":"3rd","p2":"SKY",      "runs":58, "balls":35, "samson":36, "overs":"4.x–10.x"},
+    {"wkt":"4th","p2":"Tilak",    "runs":42, "balls":26, "samson":22, "overs":"11–14.4"},
+    {"wkt":"5th","p2":"Hardik",   "runs":38, "balls":22, "samson":24, "overs":"14.4–18.x"},
+    {"wkt":"6th","p2":"Dube",     "runs":20, "balls":6,  "samson":14, "overs":"19–19.2"},
+]
+
+rr_df = pd.DataFrame({
+    "Over":     list(range(1, 20)),
+    # Confirmed over-by-over totals from live commentary:
+    # end ov2=12, ov5=45, ov6=53, ov7=67, ov8=78, ov9=91, ov10=98,
+    # ov11≈101, ov12≈104, ov13=121, ov14=136, ov15=146, ov16=160, ov17=171, ov18=179, ov19=189
+    "Actual":   [6,  6, 16,  7,  8,  8, 14, 11, 13,  7,  3,  3, 17, 15, 10, 14, 11,  8, 10],
+    "Required": [9.8, 9.8, 9.7, 9.6, 9.5, 9.5, 9.3, 9.5, 9.6, 9.8, 10.1, 10.4, 10.1, 9.8, 9.5, 9.1, 8.3, 6.9, 5.0],
 })
 
-milestones = [
-    ("teal", "Ball 3",  "Hosein Assault",      "2 sixes + a four in the third over — Samson signals he means business from ball one"),
-    ("gold", "Ball 26", "50 off 26 Balls",     "Breaks a 12-innings half-century drought. A cover drive off Motie, pure and effortless"),
-    ("teal", "Ball 35", "Kept His Head",        "SKY falls cheaply. India 107/4, needing 89 more. Samson never flinches"),
-    ("gold", "Ball 45", "87* — In the Zone",   "India require 17 off 12. Samson is ice. Every ball goes exactly where he wants it"),
-    ("teal", "Ball 49", "Six off Shepherd",    "Clears the square leg fence. India level with 1 ball of the over left — crowd erupts"),
-    ("teal", "Ball 50", "97* — India Win",     "Chips Shepherd over mid-on. Kneels on the pitch. Helmet off. Eyes skyward. 🙏"),
+# Team score progression (confirmed checkpoints)
+prog_df = pd.DataFrame({
+    "Ball":  [0,  12,  20,  26,  35,  42,  50,  60,  66,  78,  84,  96, 112, 116],
+    "Score": [0,  12,  31,  41,  53,  67,  80,  98,  101, 121, 136, 160, 183, 199],
+})
+
+key_moments = [
+    ("Over 3",   "🔥", "#f59e0b", "Hosein wiped",        "2 sixes + a four in the third over. Eden erupts. Samson has announced himself."),
+    ("Ball 26",  "⭐", "#f5c842", "Half-century",         "Cover-driven off Motie. 50 off 26. Twelve innings of waiting, settled in one stroke."),
+    ("Over 11",  "⚠️", "#e84040", "Danger — 107/4",       "SKY gone. India needed 89 more. Samson looked at the required rate and smiled."),
+    ("Over 14",  "💎", "#a78bfa", "69 off 39",            "Tilak falls. 60 needed in 6 overs. Samson chose belief over caution."),
+    ("Ball 49",  "🚀", "#00c9a7", "Six to level scores",  "Shepherd over square leg. India level with 1 ball to spare in the over."),
+    ("Ball 50",  "🏆", "#f5c842", "97* — India win 🙏",   "Chips over mid-on. Kneels. Helmet off. Eyes skyward. The wait was worth it."),
 ]
 
-# ─── BOWLER CARD HTML ─────────────────────────────────────────────────────────
-def bowler_card_html(b: dict) -> str:
-    sr = round(b["runs"] / b["balls"] * 100) if b["balls"] else 0
-    runs_cls = "runs" if b["runs"] > 0 else "runs zero"
-    four_cls = "four" if b["fours"] > 0 else "zero"
-    six_cls  = "six"  if b["sixes"] > 0 else "zero"
-    sr_color = "#f5c842" if b["runs"] > 0 else "#2e3d50"
-    wkts     = f"<span style='color:#e84040;font-weight:800'> {b['team_w']}W</span>" if b["team_w"] else ""
-    return f"""
-    <div class="bowler-card {b['cls']}">
-      <div class="top-stripe"></div>
-      <div class="bc-header">
-        <div class="bc-name">{b['name']}</div>
-        <div class="bc-type-pill">{b['type']}</div>
+# ─── FULL CSS ──────────────────────────────────────────────────────────────────
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@1,500;1,700&display=swap');
+
+:root {
+  --gold: #f5c842;
+  --gold-dim: rgba(245,200,66,0.15);
+  --teal: #00c9a7;
+  --blue: #60a5fa;
+  --red: #e84040;
+  --bg: #060912;
+  --surface: rgba(255,255,255,0.028);
+  --border: rgba(255,255,255,0.07);
+  --text: #edeae0;
+  --muted: rgba(255,255,255,0.22);
+  --faint: rgba(255,255,255,0.07);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body, [class*="css"] { font-family: 'Outfit', sans-serif; }
+.stApp {
+    background: var(--bg);
+    background-image:
+        radial-gradient(ellipse 100% 55% at 50% -5%,  rgba(245,200,66,0.11) 0%, transparent 55%),
+        radial-gradient(ellipse 45% 45% at 2%  85%,   rgba(0,180,130,0.07)  0%, transparent 55%),
+        radial-gradient(ellipse 35% 35% at 98% 15%,   rgba(96,165,250,0.05) 0%, transparent 50%);
+}
+#MainMenu, footer, header { visibility: hidden; }
+.block-container { padding: 0 !important; max-width: 100% !important; }
+div[data-testid="stMainBlockContainer"] { max-width: 100% !important; padding: 0 !important; }
+
+/* ── TICKER ── */
+.ticker-wrap {
+    background: var(--gold);
+    overflow: hidden; height: 34px;
+    display: flex; align-items: center;
+}
+.ticker-label {
+    background: #000;
+    color: var(--gold);
+    font-family: 'Anton', sans-serif;
+    font-size: 11px; letter-spacing: 3px;
+    padding: 0 18px; height: 100%;
+    display: flex; align-items: center;
+    flex-shrink: 0; white-space: nowrap;
+}
+.ticker-track {
+    display: flex; gap: 0;
+    animation: ticker 30s linear infinite;
+    white-space: nowrap;
+}
+@keyframes ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+.ticker-item {
+    font-family: 'Anton', sans-serif;
+    font-size: 11px; letter-spacing: 2px;
+    color: #000; padding: 0 32px;
+    border-right: 1px solid rgba(0,0,0,0.2);
+    height: 34px; display: flex; align-items: center;
+}
+
+/* ── NAV ── */
+.nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 44px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(6,9,18,0.92);
+    backdrop-filter: blur(20px);
+}
+.nav-logo {
+    font-family: 'Anton', sans-serif;
+    font-size: 22px; letter-spacing: 3px;
+    color: var(--text); display: flex; align-items: center; gap: 10px;
+}
+.nav-logo span { color: var(--gold); }
+.nav-logo-sub { font-family: 'Outfit', sans-serif; font-size: 10px; font-weight: 400; letter-spacing: 3px; color: var(--muted); margin-left: 4px; align-self: flex-end; padding-bottom: 2px; }
+.nav-tags { display: flex; gap: 6px; }
+.nav-tag { font-size: 9px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; padding: 4px 12px; border-radius: 100px; color: var(--muted); border: 1px solid var(--faint); }
+.nav-tag.hi { background: rgba(245,200,66,0.1); border-color: rgba(245,200,66,0.3); color: var(--gold); }
+.nav-status { font-size: 11px; font-weight: 600; letter-spacing: 2px; color: var(--teal); display: flex; align-items: center; gap: 7px; }
+.blink-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--teal); animation: blink 1.8s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+/* ── WRAP ── */
+.wrap { padding: 36px 44px 80px; }
+
+/* ── HERO ── */
+.hero {
+    position: relative; overflow: hidden;
+    border-radius: 22px;
+    border: 1px solid rgba(245,200,66,0.14);
+    background: linear-gradient(125deg, #0d1525 0%, #080e1c 45%, #0b1c12 100%);
+    margin-bottom: 28px;
+    display: grid; grid-template-columns: 1fr 260px;
+    min-height: 280px;
+}
+.hero-noise {
+    position: absolute; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+    pointer-events: none; opacity: 0.5;
+}
+.hero-top-line { position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, var(--gold) 25%, var(--teal) 65%, transparent); }
+.hero-97 {
+    position: absolute; right: 255px; bottom: -30px;
+    font-family: 'Anton', sans-serif; font-size: 340px;
+    color: rgba(245,200,66,0.035); line-height: 1;
+    pointer-events: none; user-select: none; letter-spacing: -12px;
+}
+.hero-body { display: flex; align-items: center; gap: 38px; padding: 42px 44px; position: relative; z-index: 1; }
+.hero-img-outer { position: relative; flex-shrink: 0; }
+.hero-glow { position: absolute; inset: -16px; border-radius: 50%; background: radial-gradient(circle, rgba(245,200,66,0.22) 0%, transparent 68%); animation: breathe 3.5s ease-in-out infinite; }
+@keyframes breathe { 0%,100%{opacity:0.5;transform:scale(0.97)} 50%{opacity:1;transform:scale(1.03)} }
+.hero-ring { position: absolute; inset: -5px; border-radius: 50%; background: conic-gradient(from 180deg, var(--gold) 0%, var(--teal) 35%, transparent 55%, var(--gold) 100%); animation: spin 7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.hero-img { position: relative; z-index: 1; width: 152px; height: 152px; border-radius: 50%; overflow: hidden; border: 3px solid var(--bg); background: var(--gold-dim); }
+.hero-img img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+.hero-img-emoji { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 60px; }
+.hero-copy { flex: 1; }
+.hero-badge {
+    display: inline-flex; align-items: center; gap: 7px;
+    border: 1px solid rgba(245,200,66,0.3);
+    background: rgba(245,200,66,0.07);
+    color: var(--gold); font-size: 9px; font-weight: 600;
+    letter-spacing: 3px; text-transform: uppercase;
+    padding: 4px 13px; border-radius: 2px; margin-bottom: 14px;
+}
+.hero-name {
+    font-family: 'Anton', sans-serif; font-size: 78px;
+    color: var(--text); text-transform: uppercase;
+    line-height: 0.88; letter-spacing: 1px; margin-bottom: 18px;
+}
+.hero-name em { display: block; color: var(--gold); font-style: normal; font-size: 0.82em; letter-spacing: 8px; font-family: 'Outfit', sans-serif; font-weight: 300; }
+.hero-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+.hero-meta-tag { font-size: 9px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); border: 1px solid var(--faint); padding: 3px 10px; border-radius: 100px; }
+
+/* SCORE PANEL */
+.score-panel {
+    display: flex; flex-direction: column; justify-content: center; align-items: flex-end;
+    padding: 36px 40px 36px 24px;
+    border-left: 1px solid var(--border);
+    position: relative; z-index: 1;
+}
+.score-num {
+    font-family: 'Anton', sans-serif; font-size: 130px; line-height: 0.84;
+    color: var(--gold); letter-spacing: -3px;
+    text-shadow: 0 0 80px rgba(245,200,66,0.3);
+}
+.score-num sup { font-size: 0.32em; color: #d4920a; vertical-align: super; }
+.score-sub { font-size: 12px; color: var(--muted); letter-spacing: 3px; text-align: right; margin-top: 4px; }
+.score-sr { display: flex; gap: 10px; align-items: baseline; margin-top: 16px; justify-content: flex-end; }
+.score-sr-lbl { font-size: 8px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--faint); }
+.score-sr-val { font-family: 'Anton', sans-serif; font-size: 28px; color: var(--teal); letter-spacing: 1px; }
+.potm-chip { margin-top: 18px; background: linear-gradient(135deg, var(--gold), #c07800); color: #000; font-family: 'Anton', sans-serif; font-size: 9px; letter-spacing: 3px; padding: 7px 16px; border-radius: 2px; display: inline-block; }
+
+/* ── RECORD STRIP ── */
+.record-strip {
+    display: flex; align-items: center; gap: 12px;
+    background: rgba(232,64,64,0.05);
+    border: 1px solid rgba(232,64,64,0.18);
+    border-left: 3px solid var(--red);
+    border-radius: 0 10px 10px 0;
+    padding: 10px 18px; margin-bottom: 28px;
+    font-size: 12px; color: rgba(255,255,255,0.3); line-height: 1.65;
+}
+.record-strip strong { color: var(--text); }
+
+/* ── SECTION HEADER ── */
+.sh {
+    display: flex; align-items: center; gap: 16px;
+    margin: 36px 0 16px;
+}
+.sh-label {
+    font-family: 'Anton', sans-serif; font-size: 14px;
+    letter-spacing: 5px; text-transform: uppercase;
+    color: var(--gold); white-space: nowrap;
+}
+.sh-line { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(245,200,66,0.25), transparent); }
+.sh-pill { font-size: 9px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); border: 1px solid var(--faint); padding: 2px 10px; border-radius: 100px; white-space: nowrap; }
+
+/* ── OVERVIEW STRIP ── */
+.ov-strip { display: grid; grid-template-columns: repeat(5,1fr); gap: 10px; margin-bottom: 28px; }
+.ov-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 18px 20px;
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 8px; position: relative; overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+}
+.ov-card:hover { transform: translateY(-3px); border-color: rgba(245,200,66,0.22); }
+.ov-card::before { content: ''; position: absolute; left: 0; top: 22%; bottom: 22%; width: 2px; background: var(--ac,var(--gold)); border-radius: 2px; opacity: 0.7; }
+.ov-lhs { display: flex; flex-direction: column; gap: 5px; }
+.ov-icon { font-size: 19px; }
+.ov-lbl { font-size: 8px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); }
+.ov-num { font-family: 'Anton', sans-serif; font-size: 52px; line-height: 1; color: var(--text); }
+.ov-num.g { color: var(--gold); }
+.ov-num.t { color: var(--teal); }
+.ov-num.b { color: var(--blue); }
+
+/* ── PHASE CARDS ── */
+.phase-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 28px; }
+.pc {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 22px 24px;
+    display: flex; align-items: center; gap: 22px;
+    position: relative; overflow: hidden;
+}
+.pc::before { content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 3px; }
+.pc.pp::before  { background: linear-gradient(180deg,var(--gold),#c07800); }
+.pc.mid::before { background: linear-gradient(180deg,var(--blue),#2563eb); }
+.pc.dt::before  { background: linear-gradient(180deg,#f97316,#c2410c); }
+.pc-big { font-family: 'Anton', sans-serif; font-size: 76px; line-height: 1; flex-shrink: 0; }
+.pc.pp  .pc-big { color: var(--gold); }
+.pc.mid .pc-big { color: var(--blue); }
+.pc.dt  .pc-big { color: #f97316; }
+.pc-info { flex: 1; min-width: 0; }
+.pc-over { font-size: 8px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); }
+.pc-name { font-family: 'Anton', sans-serif; font-size: 21px; color: var(--text); letter-spacing: 1px; text-transform: uppercase; line-height: 1; margin: 4px 0 10px; }
+.pc-sr-pill { display: inline-block; background: rgba(0,201,167,0.1); border: 1px solid rgba(0,201,167,0.22); color: var(--teal); font-size: 10px; font-weight: 600; letter-spacing: 1px; padding: 3px 10px; border-radius: 100px; margin-bottom: 9px; }
+.pc-meta { display: flex; gap: 12px; flex-wrap: nowrap; }
+.pc-tag { font-size: 10px; color: var(--muted); display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+.pc-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── TWO-COL ── */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px; }
+.chart-box { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 4px; overflow: hidden; }
+
+/* ── PARTNERSHIPS ── */
+.pship-row { display: grid; grid-template-columns: repeat(6,1fr); gap: 8px; margin-bottom: 28px; }
+.pship-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 15px;
+    transition: transform 0.2s, border-color 0.2s;
+}
+.pship-card:hover { transform: translateY(-2px); border-color: rgba(245,200,66,0.2); }
+.pship-wkt { font-size: 8px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+.pship-names { font-size: 11px; font-weight: 600; color: var(--text); line-height: 1.3; margin-bottom: 9px; }
+.pship-names em { color: var(--gold); font-style: normal; }
+.pship-big { font-family: 'Anton', sans-serif; font-size: 42px; line-height: 1; color: var(--text); }
+.pship-balls { font-size: 9px; color: var(--muted); letter-spacing: 1px; margin-bottom: 8px; }
+.pship-bar-bg { height: 3px; background: var(--faint); border-radius: 2px; overflow: hidden; margin-bottom: 5px; }
+.pship-bar-fg { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--gold), rgba(245,200,66,0.4)); }
+.pship-pct { display: flex; justify-content: space-between; font-size: 8px; color: var(--muted); }
+
+/* ── BOWLER GRID ── */
+.bowler-row-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 10px; }
+.bowler-row-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 16px; }
+.bc {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px 16px;
+    position: relative; overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+}
+.bc:hover { transform: translateY(-2px); border-color: rgba(245,200,66,0.2); }
+.bc .top-bar { position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+.bc.fast   .top-bar { background: linear-gradient(90deg,var(--gold),#f97316); }
+.bc.medium .top-bar { background: linear-gradient(90deg,var(--teal),#0284c7); }
+.bc.spin   .top-bar { background: linear-gradient(90deg,#a78bfa,#7c3aed); }
+.bc-hd { display: flex; justify-content: space-between; align-items: flex-start; margin: 6px 0 4px; }
+.bc-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.bc-pill { font-size: 7px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 2px 8px; border-radius: 100px; }
+.bc.fast   .bc-pill { background: rgba(245,200,66,0.1);  color: var(--gold); }
+.bc.medium .bc-pill { background: rgba(0,201,167,0.1);   color: var(--teal); }
+.bc.spin   .bc-pill { background: rgba(167,139,250,0.1); color: #a78bfa; }
+.bc-sub { font-size: 9px; color: var(--faint); margin-bottom: 10px; }
+.bc-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 2px; background: rgba(0,0,0,0.22); border-radius: 8px; padding: 8px 4px; }
+.bc-cell { text-align: center; }
+.bc-val { font-family: 'Anton', sans-serif; font-size: 26px; line-height: 1; color: var(--text); }
+.bc-val.g { color: var(--gold); font-size: 30px; }
+.bc-val.b { color: var(--blue); }
+.bc-val.t { color: var(--teal); }
+.bc-val.x { color: rgba(255,255,255,0.12); }
+.bc-lbl { font-size: 7px; color: rgba(255,255,255,0.18); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 2px; }
+.bc-ft { display: flex; justify-content: space-between; margin-top: 8px; padding-top: 7px; border-top: 1px solid var(--faint); font-size: 10px; color: var(--muted); }
+.bc-ft b { color: rgba(255,255,255,0.5); }
+
+/* ── SUMMARY BAR ── */
+.sum-bar { display: flex; border: 1px solid var(--border); border-radius: 11px; overflow: hidden; margin-bottom: 28px; }
+.sum-cell { flex: 1; text-align: center; padding: 11px 6px; border-right: 1px solid var(--faint); background: rgba(255,255,255,0.01); }
+.sum-cell:last-child { border-right: none; }
+.sum-val { font-family: 'Anton', sans-serif; font-size: 22px; color: var(--gold); line-height: 1; }
+.sum-lbl { font-size: 7px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-top: 3px; }
+
+/* ── KEY MOMENTS ── */
+.moments-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 28px; }
+.moment-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 18px 20px;
+    position: relative; overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+}
+.moment-card:hover { transform: translateY(-2px); border-color: rgba(245,200,66,0.18); }
+.moment-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--mc, var(--gold)); }
+.moment-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.moment-emoji { font-size: 22px; }
+.moment-over { font-family: 'Anton', sans-serif; font-size: 13px; letter-spacing: 3px; color: var(--mc,var(--gold)); }
+.moment-title { font-family: 'Anton', sans-serif; font-size: 20px; letter-spacing: 0.5px; color: var(--text); margin-bottom: 6px; line-height: 1.1; }
+.moment-desc { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+/* ── BOTTOM SPLIT ── */
+.bottom-split { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px; }
+
+/* ── QUOTE ── */
+.quote-card { background: var(--surface); border: 1px solid var(--border); border-top: 2px solid var(--gold); border-radius: 0 0 14px 14px; padding: 24px; }
+.q-marks { font-family: 'Playfair Display', serif; font-size: 68px; line-height: 0.35; color: rgba(245,200,66,0.14); margin-bottom: 12px; }
+.q-text { font-family: 'Playfair Display', serif; font-style: italic; font-size: 13.5px; color: rgba(255,255,255,0.38); line-height: 1.85; margin-bottom: 14px; }
+.q-source { font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); }
+
+/* ── RESULT ── */
+.result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+.result-hdr { background: rgba(245,200,66,0.06); border-bottom: 1px solid rgba(245,200,66,0.12); padding: 10px 18px; font-size: 8px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; color: var(--gold); }
+.result-body { padding: 18px; }
+.result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--faint); border-radius: 8px; overflow: hidden; margin-bottom: 14px; }
+.result-cell { background: rgba(6,9,18,0.6); padding: 12px 14px; text-align: center; }
+.r-lbl { font-size: 8px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+.r-val { font-family: 'Anton', sans-serif; font-size: 34px; line-height: 1; color: var(--text); }
+.result-footer { font-size: 11px; color: var(--muted); text-align: center; line-height: 1.75; }
+.result-footer strong { color: var(--gold); }
+
+/* ── FOOTER ── */
+.foot { display: flex; justify-content: space-between; align-items: center; padding-top: 20px; border-top: 1px solid var(--faint); flex-wrap: wrap; gap: 10px; }
+.foot-l { font-size: 10px; color: rgba(255,255,255,0.13); line-height: 1.9; }
+.foot-r { font-family: 'Anton', sans-serif; font-size: 16px; letter-spacing: 4px; color: rgba(245,200,66,0.22); }
+</style>
+""", unsafe_allow_html=True)
+
+# ─── HELPERS ──────────────────────────────────────────────────────────────────
+def sh(label, pill=""):
+    p = f'<span class="sh-pill">{pill}</span>' if pill else ""
+    return f'<div class="sh"><span class="sh-label">{label}</span><div class="sh-line"></div>{p}</div>'
+
+def bowler_card_html(b):
+    sr  = round(b["runs"]/b["balls"]*100) if b["balls"] else 0
+    rc  = "g" if b["runs"] > 0 else "x"
+    fc  = "b" if b["fours"] > 0 else "x"
+    xc  = "t" if b["sixes"] > 0 else "x"
+    sc  = "var(--gold)" if b["runs"] > 0 else "rgba(255,255,255,0.18)"
+    wkt = f" · <span style='color:var(--red);font-weight:700'>{b['team_w']}W</span>" if b["team_w"] else ""
+    return f"""<div class="bc {b['cls']}">
+      <div class="top-bar"></div>
+      <div class="bc-hd"><span class="bc-name">{b['name']}</span><span class="bc-pill">{b['type']}</span></div>
+      <div class="bc-sub">{b['team_ov']} ov · {b['team_r']} runs{wkt}</div>
+      <div class="bc-grid">
+        <div class="bc-cell"><div class="bc-val {rc}">{b['runs']}</div><div class="bc-lbl">Runs</div></div>
+        <div class="bc-cell"><div class="bc-val">{b['balls']}</div><div class="bc-lbl">Balls</div></div>
+        <div class="bc-cell"><div class="bc-val {fc}">{b['fours']}</div><div class="bc-lbl">4s</div></div>
+        <div class="bc-cell"><div class="bc-val {xc}">{b['sixes']}</div><div class="bc-lbl">6s</div></div>
       </div>
-      <div class="bc-team-line">{b['team_ov']} ov &nbsp;·&nbsp; {b['team_r']} runs{wkts}</div>
-      <div class="bc-stats">
-        <div class="bc-stat">
-          <div class="bc-stat-val {runs_cls}">{b['runs']}</div>
-          <div class="bc-stat-lbl">Runs</div>
-        </div>
-        <div class="bc-stat">
-          <div class="bc-stat-val">{b['balls']}</div>
-          <div class="bc-stat-lbl">Balls</div>
-        </div>
-        <div class="bc-stat">
-          <div class="bc-stat-val {four_cls}">{b['fours']}</div>
-          <div class="bc-stat-lbl">Fours</div>
-        </div>
-        <div class="bc-stat">
-          <div class="bc-stat-val {six_cls}">{b['sixes']}</div>
-          <div class="bc-stat-lbl">Sixes</div>
-        </div>
-      </div>
-      <div class="bc-footer">
-        <div class="bc-sr">SR <strong style="color:{sr_color}">{sr}</strong></div>
-        <div class="bc-dots">{b['dots']} dot{'s' if b['dots']!=1 else ''}</div>
-      </div>
+      <div class="bc-ft"><span>SR <b style="color:{sc}">{sr}</b></span><span><b>{b['dots']}</b> dot{'s' if b['dots']!=1 else ''}</b></span></div>
     </div>"""
 
+# ─── TICKER ───────────────────────────────────────────────────────────────────
+ticker_items = [
+    "🏏 SANJU SAMSON 97* OFF 50 BALLS",
+    "⭐ PLAYER OF THE MATCH",
+    "🇮🇳 INDIA 199/5 BEAT WEST INDIES 195/4",
+    "🏆 INDIA TO T20 WC SEMI-FINALS",
+    "📊 16 BOUNDARIES — MOST BY AN INDIAN IN T20 WC",
+    "🚀 INDIA'S HIGHEST-EVER SUCCESSFUL T20 WC CHASE",
+    "📅 SEMI-FINAL vs ENGLAND · WANKHEDE · MARCH 5",
+    "💎 SR 194.00 · 12 FOURS · 4 SIXES",
+]
+double = ticker_items * 2
+items_html = "".join(f'<div class="ticker-item">{t}</div>' for t in double)
+st.markdown(f"""
+<div class="ticker-wrap">
+  <div class="ticker-label">LIVE UPDATE</div>
+  <div style="overflow:hidden;flex:1">
+    <div class="ticker-track">{items_html}</div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
+# ─── NAV ──────────────────────────────────────────────────────────────────────
+st.markdown("""
+<div class="nav">
+  <div class="nav-logo">T20 WC <span>&nbsp;2026</span><span class="nav-logo-sub">SCORECARD</span></div>
+  <div class="nav-tags">
+    <span class="nav-tag hi">Super Eights</span>
+    <span class="nav-tag">India</span>
+    <span class="nav-tag">Eden Gardens</span>
+    <span class="nav-tag">1 March 2026</span>
+  </div>
+  <div class="nav-status"><div class="blink-dot"></div>MATCH COMPLETE · IND WON</div>
+</div>
+<div class="wrap">
+""", unsafe_allow_html=True)
+
 # ─── HERO ─────────────────────────────────────────────────────────────────────
-img_inner = (
-    f'<img src="{player_img_src}" alt="Sanju Samson"/>'
-    if player_img_src
-    else '<div class="hero-img-emoji">🏏</div>'
-)
+img_inner = (f'<img src="{player_img}" alt="Sanju Samson"/>'
+             if player_img else '<div class="hero-img-emoji">🏏</div>')
 
 st.markdown(f"""
 <div class="hero">
-  <div class="hero-accent-bar"></div>
-  <div class="hero-bg-number">97</div>
-  <div class="hero-left">
-    <div class="hero-img-container">
-      <div class="hero-img-ring"></div>
-      <div class="hero-img-inner">{img_inner}</div>
+  <div class="hero-noise"></div>
+  <div class="hero-top-line"></div>
+  <div class="hero-97">97</div>
+  <div class="hero-body">
+    <div class="hero-img-outer">
+      <div class="hero-glow"></div>
+      <div class="hero-ring"></div>
+      <div class="hero-img">{img_inner}</div>
     </div>
-    <div class="hero-info">
-      <div class="hero-tag">
-        <div class="hero-tag-dot"></div>
-        Player of the Match &nbsp;·&nbsp; T20 World Cup 2026
-      </div>
-      <div class="hero-name">
-        Sanju
-        <em>Samson</em>
-      </div>
+    <div class="hero-copy">
+      <div class="hero-badge"><div class="blink-dot" style="background:var(--gold)"></div>Player of the Match &nbsp;·&nbsp; T20 World Cup 2026</div>
+      <div class="hero-name">Sanju<em>Samson</em></div>
       <div class="hero-meta">
-        <span class="hero-meta-item">Super Eights</span>
-        <span class="hero-meta-sep">·</span>
-        <span class="hero-meta-item">Eden Gardens, Kolkata</span>
-        <span class="hero-meta-sep">·</span>
-        <span class="hero-meta-item">March 1, 2026</span>
-        <span class="hero-meta-sep">·</span>
-        <span class="hero-meta-item">India vs West Indies</span>
+        <span class="hero-meta-tag">Super Eights</span>
+        <span class="hero-meta-tag">Eden Gardens, Kolkata</span>
+        <span class="hero-meta-tag">India vs West Indies</span>
+        <span class="hero-meta-tag">March 1, 2026</span>
       </div>
     </div>
   </div>
-  <div class="hero-right">
-    <div class="hero-score">97<sup>*</sup></div>
-    <div class="hero-score-sub">off 50 balls</div>
-    <div class="hero-sr">
-      <span class="hero-sr-label">Strike Rate</span>
-      <span class="hero-sr-value">194.00</span>
+  <div class="score-panel">
+    <div class="score-num">97<sup>*</sup></div>
+    <div class="score-sub">off 50 balls</div>
+    <div class="score-sr">
+      <span class="score-sr-lbl">Strike Rate</span>
+      <span class="score-sr-val">194</span>
     </div>
-    <div class="potm-badge">🏆 Player of the Match</div>
+    <div class="potm-chip">🏆 POTM</div>
   </div>
+</div>
+
+<div class="record-strip">
+  <span style="font-size:16px;flex-shrink:0">📋</span>
+  <span>
+    <strong>Records broken tonight:</strong>
+    Highest score by an Indian in a T20 WC run-chase ·
+    Most boundaries by an Indian in a T20 WC match (16) ·
+    India's highest-ever successful T20 WC chase (199/5)
+  </span>
 </div>
 """, unsafe_allow_html=True)
 
-# ─── RECORD BANNER ────────────────────────────────────────────────────────────
-st.markdown("""
-<div class="record-banner">
-  <div class="record-icon">📋</div>
-  <div class="record-text">
-    <strong>Record:</strong> Highest score by an Indian in a T20 World Cup run-chase ·
-    India's biggest-ever T20 WC successful chase ·
-    India <strong>199/5</strong> beat West Indies <strong>195/4</strong> by 5 wickets
-  </div>
-</div>
-""", unsafe_allow_html=True)
+# ─── OVERVIEW ─────────────────────────────────────────────────────────────────
+st.markdown(sh("Innings Overview"), unsafe_allow_html=True)
+ov = [("🏏","97*","Runs","g","var(--gold)"),("⏱","50","Balls","","var(--text)"),
+      ("4️⃣","12","Fours","b","var(--blue)"),("6️⃣","4","Sixes","t","var(--teal)"),("⚡","194","Strike Rate","g","var(--gold)")]
+ov_html = "".join(f'<div class="ov-card" style="--ac:{ac}"><div class="ov-lhs"><div class="ov-icon">{i}</div><div class="ov-lbl">{l}</div></div><div class="ov-num {c}">{v}</div></div>' for i,v,l,c,ac in ov)
+st.markdown(f'<div class="ov-strip">{ov_html}</div>', unsafe_allow_html=True)
 
-# ─── STAT CARDS ───────────────────────────────────────────────────────────────
-stats = [
-    ("🏏", "97*",  "Runs",        "gold", "#f5c842"),
-    ("⏱",  "50",   "Balls Faced", "",     "#f0ece0"),
-    ("4️⃣",  "12",   "Fours",       "blue", "#60a5fa"),
-    ("6️⃣",  "4",    "Sixes",       "teal", "#00c9a7"),
-    ("⚡",  "194",  "Strike Rate", "gold", "#f5c842"),
-]
-
-cards_html = ""
-for icon, val, lbl, cls, accent in stats:
-    cards_html += f"""
-    <div class="stat-card" style="--accent:{accent}">
-      <div class="stat-left">
-        <div class="stat-icon">{icon}</div>
-        <div class="stat-lbl">{lbl}</div>
-      </div>
-      <div class="stat-val {cls}">{val}</div>
-    </div>"""
-
-st.markdown(f'<div class="stat-grid">{cards_html}</div>', unsafe_allow_html=True)
-
-# ─── SECTION LABEL ────────────────────────────────────────────────────────────
-st.markdown("""
-<div class="section-label">
-  <span class="section-label-text">Innings Breakdown by Phase</span>
-  <div class="section-label-line"></div>
-</div>""", unsafe_allow_html=True)
-
-# ─── PHASE CARDS ──────────────────────────────────────────────────────────────
-# ─── PHASE CARDS ──────────────────────────────────────────────────────────────
-phase_dot_colors = {
-    "pp":  {"fours": "#f5c842", "sixes": "#f5c842"},
-    "mid": {"fours": "#60a5fa", "sixes": "#60a5fa"},
-    "dt":  {"fours": "#f97316", "sixes": "#f97316"},
-}
-
-phase_html = ""
-for ph in phases:
-    dc = phase_dot_colors[ph["key"]]
-    phase_html += f"""
-    <div class="phase-card {ph['key']}">
-      <div class="phase-score">{ph['runs']}</div>
-      <div class="phase-right">
-        <div class="phase-top">
-          <div>
-            <div class="phase-overs">{ph['overs']}</div>
-            <div class="phase-name">{ph['name']}</div>
-          </div>
-          <div class="phase-sr-pill">SR {ph['sr']}</div>
-        </div>
-        <div class="phase-detail">
-          <div class="phase-detail-item">
-            <div class="phase-detail-dot" style="background:{dc['fours']}"></div>
-            {ph['balls']} balls
-          </div>
-          <div class="phase-detail-item">
-            <div class="phase-detail-dot" style="background:#60a5fa"></div>
-            {ph['fours']} fours
-          </div>
-          <div class="phase-detail-item">
-            <div class="phase-detail-dot" style="background:#00c9a7"></div>
-            {ph['sixes']} sixes
-          </div>
+# ─── PHASE ────────────────────────────────────────────────────────────────────
+st.markdown(sh("Phase Breakdown"), unsafe_allow_html=True)
+pc = {"pp":"var(--gold)","mid":"var(--blue)","dt":"#f97316"}
+ph_html = ""
+for p in phases:
+    c = pc[p["key"]]
+    ph_html += f"""<div class="pc {p['key']}">
+      <div class="pc-big">{p['runs']}</div>
+      <div class="pc-info">
+        <div class="pc-over">{p['label']}</div>
+        <div class="pc-name">{p['name']}</div>
+        <div class="pc-sr-pill">SR {p['sr']}</div>
+        <div class="pc-meta">
+          <span class="pc-tag"><span class="pc-dot" style="background:{c}"></span>{p['balls']} balls</span>
+          <span class="pc-tag"><span class="pc-dot" style="background:var(--blue)"></span>{p['fours']} fours</span>
+          <span class="pc-tag"><span class="pc-dot" style="background:var(--teal)"></span>{p['sixes']} sixes</span>
         </div>
       </div>
     </div>"""
+st.markdown(f'<div class="phase-row">{ph_html}</div>', unsafe_allow_html=True)
 
-st.markdown(f'<div class="phase-grid">{phase_html}</div>', unsafe_allow_html=True)
+# ─── SCORE PROGRESSION ────────────────────────────────────────────────────────
+st.markdown(sh("Score Progression"), unsafe_allow_html=True)
 
-# ─── SECTION LABEL ────────────────────────────────────────────────────────────
-st.markdown("""
-<div class="section-label section-gap">
-  <span class="section-label-text">vs Each Bowler — Samson's Contribution</span>
-  <div class="section-label-line"></div>
-</div>""", unsafe_allow_html=True)
+PLOT_BG = "rgba(255,255,255,0.015)"
+GRID_C  = "rgba(255,255,255,0.045)"
+AX_C    = "rgba(255,255,255,0.22)"
 
-# ─── BOWLER CARDS ─────────────────────────────────────────────────────────────
-row1 = "".join(bowler_card_html(b) for b in bowlers_row1)
-row2 = "".join(bowler_card_html(b) for b in bowlers_row2)
-st.markdown(f"""
-<div class="bowler-grid-top">{row1}</div>
-<div class="bowler-grid-bot">{row2}</div>
-<div class="summary-strip">
-  <div class="summary-item">
-    <div class="summary-val">8</div>
-    <div class="summary-lbl">Dot Balls</div>
-  </div>
-  <div class="summary-item">
-    <div class="summary-val">12</div>
-    <div class="summary-lbl">Fours Hit</div>
-  </div>
-  <div class="summary-item">
-    <div class="summary-val">4</div>
-    <div class="summary-lbl">Sixes Hit</div>
-  </div>
-  <div class="summary-item">
-    <div class="summary-val">72</div>
-    <div class="summary-lbl">Boundary Runs</div>
-  </div>
-  <div class="summary-item">
-    <div class="summary-val">25</div>
-    <div class="summary-lbl">Running Runs</div>
-  </div>
-  <div class="summary-item">
-    <div class="summary-val">7</div>
-    <div class="summary-lbl">Bowlers Faced</div>
-  </div>
-</div>
-""", unsafe_allow_html=True)
+st.markdown('<div class="chart-box">', unsafe_allow_html=True)
+fig2 = go.Figure()
 
-# ─── SECTION LABEL ────────────────────────────────────────────────────────────
-st.markdown("""
-<div class="section-label section-gap">
-  <span class="section-label-text">Score Progression</span>
-  <div class="section-label-line"></div>
-</div>""", unsafe_allow_html=True)
+# Required run rate — straight line: overs * 9.8, converted to balls
+req_balls = list(range(0, 117))
+req_runs  = [b * (9.8 / 6) for b in req_balls]
 
-# ─── SCORE PROGRESSION CHART ─────────────────────────────────────────────────
-fig = go.Figure()
-
-# Gradient area
-fig.add_trace(go.Scatter(
-    x=progression["Ball"], y=progression["Score"],
-    fill="tozeroy",
-    fillgradient=dict(
-        type="vertical",
-        colorscale=[[0, "rgba(245,200,66,0.18)"], [1, "rgba(245,200,66,0)"]],
-    ),
-    line=dict(color="rgba(0,0,0,0)"),
-    showlegend=False, hoverinfo="skip",
+# Background shade — above required = good (green tint), below = danger
+fig2.add_trace(go.Scatter(
+    x=req_balls, y=req_runs,
+    fill="tozeroy", fillcolor="rgba(232,64,64,0.06)",
+    line=dict(color="rgba(0,0,0,0)"), showlegend=False, hoverinfo="skip",
 ))
 
-# Main line
-fig.add_trace(go.Scatter(
-    x=progression["Ball"], y=progression["Score"],
-    mode="lines+markers",
-    line=dict(color="#f5c842", width=3, shape="spline", smoothing=1.0),
-    marker=dict(
-        color="#07090f", size=8,
-        line=dict(color="#f5c842", width=2.5),
-    ),
-    hovertemplate="<b>Ball %{x}</b><br>Score: %{y}*<extra></extra>",
-    showlegend=False,
+# Required RR line
+fig2.add_trace(go.Scatter(
+    x=req_balls, y=req_runs,
+    name="Required (9.8 rpo)", mode="lines",
+    line=dict(color="rgba(232,64,64,0.6)", width=1.5, dash="dash"),
+    hoverinfo="skip", showlegend=True,
 ))
+
+# Gold fill under actual score
+fig2.add_trace(go.Scatter(
+    x=prog_df["Ball"], y=prog_df["Score"],
+    fill="tozeroy", fillcolor="rgba(245,200,66,0.08)",
+    line=dict(color="rgba(0,0,0,0)"), showlegend=False, hoverinfo="skip",
+))
+
+# Main score line — thicker, no markers for a cleaner read
+fig2.add_trace(go.Scatter(
+    x=prog_df["Ball"], y=prog_df["Score"],
+    name="India", mode="lines",
+    line=dict(color="#f5c842", width=3.5, shape="spline", smoothing=0.8),
+    hovertemplate="Ball %{x} · %{y} runs<extra></extra>",
+))
+
+# Phase shading bands
+fig2.add_vrect(x0=0,  x1=36,  fillcolor="rgba(245,200,66,0.03)", line_width=0)
+fig2.add_vrect(x0=36, x1=96,  fillcolor="rgba(96,165,250,0.03)", line_width=0)
+fig2.add_vrect(x0=96, x1=117, fillcolor="rgba(249,115,22,0.04)", line_width=0)
+
+# Phase labels at top
+for xv, lbl, col in [(18, "POWERPLAY", "rgba(245,200,66,0.2)"),
+                      (63, "MIDDLE", "rgba(96,165,250,0.2)"),
+                      (103, "DEATH", "rgba(249,115,22,0.2)")]:
+    fig2.add_annotation(x=xv, y=205, text=lbl, showarrow=False,
+                        font=dict(color=col, size=8, family="Outfit"), xanchor="center")
 
 # Phase boundary lines
-for x_val, label, color in [(6, "PP END", "rgba(245,200,66,0.3)"), (15, "MIDDLE END", "rgba(96,165,250,0.3)")]:
-    fig.add_vline(x=x_val, line=dict(color=color, width=1, dash="dot"))
-    fig.add_annotation(x=x_val, y=105, text=label, showarrow=False,
-                       font=dict(color=color, size=8, family="Barlow Condensed"),
-                       textangle=0, xanchor="center")
+for xv in [36, 96]:
+    fig2.add_vline(x=xv, line=dict(color="rgba(255,255,255,0.08)", width=1))
 
-# Milestone annotations
-fig.add_annotation(x=26, y=53, text="<b>50</b> (26b)",
-                   showarrow=True, arrowhead=0, arrowcolor="#00c9a7",
-                   font=dict(color="#00c9a7", size=11, family="Barlow Condensed"),
-                   ax=0, ay=-36, bgcolor="rgba(0,201,167,0.1)",
-                   bordercolor="#00c9a7", borderwidth=1, borderpad=4)
-fig.add_annotation(x=50, y=97, text="<b>97*</b> (50b)",
-                   showarrow=True, arrowhead=0, arrowcolor="#f5c842",
-                   font=dict(color="#f5c842", size=11, family="Barlow Condensed"),
-                   ax=-20, ay=-36, bgcolor="rgba(245,200,66,0.1)",
-                   bordercolor="#f5c842", borderwidth=1, borderpad=4)
-
-fig.update_layout(
-    paper_bgcolor="rgba(255,255,255,0.02)",
-    plot_bgcolor="rgba(0,0,0,0)",
-    height=210,
-    margin=dict(l=48, r=20, t=24, b=36),
-    xaxis=dict(
-        title=dict(text="Ball", font=dict(color="#2e3d50", size=10, family="Barlow")),
-        showgrid=True, gridcolor="rgba(255,255,255,0.03)",
-        color="#2e3d50", tickfont=dict(color="#2e3d50", size=10, family="Barlow"),
-        range=[0, 51], zeroline=False, tickmode="linear", dtick=5,
-    ),
-    yaxis=dict(
-        title=dict(text="Runs", font=dict(color="#2e3d50", size=10, family="Barlow")),
-        showgrid=True, gridcolor="rgba(255,255,255,0.03)",
-        color="#2e3d50", tickfont=dict(color="#2e3d50", size=10, family="Barlow"),
-        range=[0, 112], zeroline=False,
-    ),
-    font=dict(family="Barlow"),
-    shapes=[dict(
-        type="rect", xref="paper", yref="paper",
-        x0=0, y0=0, x1=1, y1=1,
-        line=dict(color="rgba(255,255,255,0.05)", width=1),
-        fillcolor="rgba(0,0,0,0)",
-    )],
+# Samson 50 milestone — ball 58
+fig2.add_trace(go.Scatter(
+    x=[58], y=[84], mode="markers",
+    marker=dict(symbol="star", size=14, color="#00c9a7",
+                line=dict(color="#00c9a7", width=1)),
+    showlegend=False, hoverinfo="skip",
+))
+fig2.add_annotation(
+    x=58, y=84, text="50★ off 26b", showarrow=True,
+    arrowhead=0, arrowwidth=1, arrowcolor="rgba(0,201,167,0.5)",
+    font=dict(color="#00c9a7", size=9, family="Outfit"),
+    ax=30, ay=-30,
+    bgcolor="rgba(0,201,167,0.08)",
+    bordercolor="rgba(0,201,167,0.3)", borderwidth=1, borderpad=4,
 )
 
-st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+# Win marker at ball 116
+fig2.add_trace(go.Scatter(
+    x=[116], y=[199], mode="markers",
+    marker=dict(symbol="star", size=16, color="#f5c842",
+                line=dict(color="#f5c842", width=1)),
+    showlegend=False, hoverinfo="skip",
+))
+fig2.add_annotation(
+    x=116, y=199, text="IND WIN 🏆", showarrow=True,
+    arrowhead=0, arrowwidth=1, arrowcolor="rgba(245,200,66,0.5)",
+    font=dict(color="#f5c842", size=9, family="Outfit"),
+    ax=-40, ay=-28,
+    bgcolor="rgba(245,200,66,0.08)",
+    bordercolor="rgba(245,200,66,0.3)", borderwidth=1, borderpad=4,
+)
 
-# ─── MILESTONES + MATCH CONTEXT ──────────────────────────────────────────────
-st.markdown("""
-<div class="section-label section-gap">
-  <span class="section-label-text">Key Moments & Match Summary</span>
-  <div class="section-label-line"></div>
-</div>""", unsafe_allow_html=True)
+fig2.update_layout(
+    paper_bgcolor="rgba(255,255,255,0.02)",
+    plot_bgcolor="rgba(0,0,0,0)",
+    height=300,
+    margin=dict(l=48, r=16, t=20, b=40),
+    legend=dict(
+        orientation="h", x=0.02, y=0.98,
+        font=dict(color=AX_C, size=9, family="Outfit"),
+        bgcolor="rgba(0,0,0,0)", borderwidth=0,
+    ),
+    xaxis=dict(
+        showgrid=False, zeroline=False,
+        color=AX_C, tickfont=dict(size=9, family="Outfit"),
+        range=[0, 117],
+        tickvals=[0, 18, 36, 54, 72, 90, 108, 116],
+        ticktext=["0", "3", "6", "9", "12", "15", "18", "19.2"],
+        title=dict(text="Over", font=dict(size=9, color=AX_C, family="Outfit")),
+    ),
+    yaxis=dict(
+        showgrid=True, gridcolor="rgba(255,255,255,0.04)",
+        zeroline=False, color=AX_C,
+        tickfont=dict(size=9, family="Outfit"),
+        range=[0, 215],
+        title=dict(text="Runs", font=dict(size=9, color=AX_C, family="Outfit")),
+    ),
+)
+st.plotly_chart(fig2, use_container_width=True, config={"displayModeBar": False})
+st.markdown('</div>', unsafe_allow_html=True)
 
-left, right = st.columns([3, 2], gap="large")
+
+# ─── PARTNERSHIPS ─────────────────────────────────────────────────────────────
+st.markdown(sh("Partnership Tracker", "6 stands · 199 runs"), unsafe_allow_html=True)
+max_p = max(p["runs"] for p in partnerships)
+psh = ""
+for p in partnerships:
+    w = round(p["runs"]/max_p*100)
+    sp = round(p["samson"]/p["runs"]*100) if p["runs"] else 0
+    psh += f"""<div class="pship-card">
+      <div class="pship-wkt">{p['wkt']} Wicket · Ov {p['overs']}</div>
+      <div class="pship-names"><em>Samson</em> + {p['p2']}</div>
+      <div class="pship-big">{p['runs']}</div>
+      <div class="pship-balls">{p['balls']} balls</div>
+      <div class="pship-bar-bg"><div class="pship-bar-fg" style="width:{w}%"></div></div>
+      <div class="pship-pct"><span>S {sp}%</span><span>{p['p2'][0]} {100-sp}%</span></div>
+    </div>"""
+st.markdown(f'<div class="pship-row">{psh}</div>', unsafe_allow_html=True)
+
+# ─── BOWLERS ──────────────────────────────────────────────────────────────────
+st.markdown(sh("Head-to-Head vs Each Bowler", "7 bowlers"), unsafe_allow_html=True)
+all_cards = "".join(bowler_card_html(b) for b in bowlers)
+st.markdown(f"""
+<div class="bowler-row-4">{all_cards}</div>
+<div class="sum-bar">
+  <div class="sum-cell"><div class="sum-val">9</div><div class="sum-lbl">Dot Balls</div></div>
+  <div class="sum-cell"><div class="sum-val">12</div><div class="sum-lbl">Fours</div></div>
+  <div class="sum-cell"><div class="sum-val">4</div><div class="sum-lbl">Sixes</div></div>
+  <div class="sum-cell"><div class="sum-val">72</div><div class="sum-lbl">Boundary Runs</div></div>
+  <div class="sum-cell"><div class="sum-val">25</div><div class="sum-lbl">Running Runs</div></div>
+  <div class="sum-cell"><div class="sum-val">7</div><div class="sum-lbl">Bowlers Faced</div></div>
+  <div class="sum-cell"><div class="sum-val">16</div><div class="sum-lbl">Boundaries</div></div>
+</div>
+""", unsafe_allow_html=True)
+
+# ─── BOWLER THREAT RADAR ──────────────────────────────────────────────────────
+st.markdown(sh("Bowler Threat — Samson's SR vs Dot Ball %"), unsafe_allow_html=True)
+st.markdown('<div class="chart-box">', unsafe_allow_html=True)
+b_names = [b["name"].split()[-1] for b in bowlers]
+b_sr    = [round(b["runs"]/b["balls"]*100) if b["balls"] else 0 for b in bowlers]
+b_dot_r = [round(b["dots"]/b["balls"]*100) if b["balls"] else 0 for b in bowlers]
+b_runs  = [b["runs"] for b in bowlers]
+colors_radar = ["#f5c842" if s > 150 else "#e84040" if s > 100 else "#00c9a7" for s in b_sr]
+
+fig4 = go.Figure()
+fig4.add_trace(go.Scatter(
+    x=b_dot_r, y=b_sr,
+    mode="markers+text",
+    text=b_names,
+    textposition="top center",
+    textfont=dict(color=AX_C, size=9),
+    marker=dict(
+        size=[max(14, r*0.9) for r in b_runs],
+        color=colors_radar,
+        opacity=0.85,
+        line=dict(color="rgba(255,255,255,0.15)", width=1),
+    ),
+    hovertemplate="<b>%{text}</b><br>SR vs Samson: %{y}<br>Dot %: %{x}%<extra></extra>",
+    showlegend=False,
+))
+fig4.add_hline(y=100, line=dict(color="rgba(255,255,255,0.1)", width=1, dash="dot"))
+fig4.add_annotation(x=max(b_dot_r)+2, y=104, text="SR 100", showarrow=False,
+                    font=dict(color="rgba(255,255,255,0.2)", size=8))
+fig4.update_layout(
+    title=dict(text="Bowler Threat — Samson's SR vs Dot Ball % (bubble = runs scored)",
+               font=dict(color=AX_C, size=11, family="Outfit"), x=0.04, y=0.97),
+    paper_bgcolor=PLOT_BG, plot_bgcolor="rgba(0,0,0,0)",
+    height=260, margin=dict(l=44,r=12,t=42,b=44),
+    xaxis=dict(showgrid=True, gridcolor=GRID_C, zeroline=False, color=AX_C, tickfont=dict(size=9),
+               title=dict(text="Dot Ball % conceded", font=dict(size=9, color=AX_C))),
+    yaxis=dict(showgrid=True, gridcolor=GRID_C, zeroline=False, color=AX_C, tickfont=dict(size=9),
+               title=dict(text="Samson's SR vs bowler", font=dict(size=9, color=AX_C))),
+)
+st.plotly_chart(fig4, use_container_width=True, config={"displayModeBar":False})
+st.markdown('</div>', unsafe_allow_html=True)
+
+# ─── KEY MOMENTS GRID ─────────────────────────────────────────────────────────
+st.markdown(sh("Key Moments"), unsafe_allow_html=True)
+km_html = ""
+for over, emoji, color, title, desc in key_moments:
+    km_html += f"""<div class="moment-card" style="--mc:{color}">
+      <div class="moment-top"><span class="moment-emoji">{emoji}</span><span class="moment-over">{over}</span></div>
+      <div class="moment-title">{title}</div>
+      <div class="moment-desc">{desc}</div>
+    </div>"""
+st.markdown(f'<div class="moments-grid">{km_html}</div>', unsafe_allow_html=True)
+
+# ─── BOTTOM SPLIT ─────────────────────────────────────────────────────────────
+st.markdown(sh("Match Summary"), unsafe_allow_html=True)
+left, right = st.columns(2, gap="medium")
 
 with left:
-    milestone_html = '<div class="milestone-list">'
-    for dot_cls, ball_label, title, desc in milestones:
-        milestone_html += f"""
-        <div class="milestone">
-          <div class="m-dot-wrap">
-            <div class="m-dot {dot_cls}"></div>
-          </div>
-          <div class="m-content">
-            <div class="m-ball">{ball_label}</div>
-            <div class="m-title">{title}</div>
-            <div class="m-desc">{desc}</div>
-          </div>
-        </div>"""
-    milestone_html += '</div>'
-    st.markdown(milestone_html, unsafe_allow_html=True)
+    st.markdown("""
+    <div class="quote-card">
+      <div class="q-marks">"</div>
+      <div class="q-text">
+        From the day I started playing and dreaming of representing my country,
+        this is the day I was waiting for. My journey has been very special,
+        with lots of ups and downs. There were times I doubted myself. But I kept believing.
+        Thanks to the Lord Almighty. This is one of the greatest days of my life.
+      </div>
+      <div class="q-source">— Sanju Samson, Player of the Match Speech</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 with right:
     st.markdown("""
-    <div class="quote-card">
-      <div class="quote-marks">"</div>
-      <div class="quote-text">
-        I relied on the experience gained from many years in this format. My focus shifted
-        to building a partnership and sticking to my process without thinking of doing anything
-        extraordinary. This will remain one of the greatest days of my life.
-      </div>
-      <div class="quote-attr">— Sanju Samson, post-match</div>
-    </div>""", unsafe_allow_html=True)
-
-    st.markdown("""
-    <div class="match-ctx">
-      <div class="match-ctx-header">Match Result — India won by 5 wickets</div>
-      <div class="match-ctx-body">
-        <div class="ctx-grid">
-          <div class="ctx-cell">
-            <div class="ctx-lbl">Target</div>
-            <div class="ctx-val">196</div>
-          </div>
-          <div class="ctx-cell">
-            <div class="ctx-lbl">India Scored</div>
-            <div class="ctx-val" style="color:#00c9a7">199/5</div>
-          </div>
-          <div class="ctx-cell">
-            <div class="ctx-lbl">Balls to spare</div>
-            <div class="ctx-val" style="color:#f5c842">4</div>
-          </div>
-          <div class="ctx-cell">
-            <div class="ctx-lbl">Margin</div>
-            <div class="ctx-val">5 wkts</div>
-          </div>
+    <div class="result-card">
+      <div class="result-hdr">Final Result — India won by 5 wickets</div>
+      <div class="result-body">
+        <div class="result-grid">
+          <div class="result-cell"><div class="r-lbl">Target</div><div class="r-val">196</div></div>
+          <div class="result-cell"><div class="r-lbl">India Scored</div><div class="r-val" style="color:var(--teal)">199/5</div></div>
+          <div class="result-cell"><div class="r-lbl">Balls to Spare</div><div class="r-val" style="color:var(--gold)">4</div></div>
+          <div class="result-cell"><div class="r-lbl">Margin</div><div class="r-val">5 Wkts</div></div>
         </div>
-        <div class="ctx-semi">
+        <div class="result-footer">
           India advance to <strong>T20 WC 2026 Semi-Finals</strong><br>
-          vs England · Wankhede, Mumbai · March 5
+          vs England · Wankhede, Mumbai · March 5, 2026
         </div>
       </div>
-    </div>""", unsafe_allow_html=True)
+    </div>
+    """, unsafe_allow_html=True)
 
 # ─── FOOTER ───────────────────────────────────────────────────────────────────
 st.markdown("""
-<div class="dash-footer">
-  <div class="footer-left">
-    Data: ESPNcricinfo / ICC Official Scorecard &nbsp;·&nbsp; T20 World Cup 2026 Super Eights<br>
-    Eden Gardens, Kolkata &nbsp;·&nbsp; March 1, 2026 &nbsp;·&nbsp; India 199/5 beat West Indies 195/4 by 5 wickets
+<div class="foot">
+  <div class="foot-l">
+    Data: ESPNcricinfo / ICC Official Scorecard · T20 World Cup 2026 Super Eights<br>
+    Eden Gardens, Kolkata · March 1, 2026 · India 199/5 beat West Indies 195/4 by 5 wickets
   </div>
-  <div class="footer-right">#TEAMINDIA · #T20WC2026</div>
+  <div class="foot-r">#TEAMINDIA · #T20WC2026</div>
+</div>
 </div>
 """, unsafe_allow_html=True)
