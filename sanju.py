@@ -887,7 +887,7 @@ bowlers_row2 = [
      "team_r": 22, "team_w": 1, "team_ov": "2.0",
      "runs": 17, "balls": 5,  "fours": 1, "sixes": 2, "dots": 1},
     {"name": "Gudakesh Motie",   "cls": "spin",   "type": "Left-arm Spin",
-     "team_r": 18, "team_w": 0, "team_ov": "2.0,
+     "team_r": 18, "team_w": 0, "team_ov": "2.0",
      "runs": 12, "balls": 7,  "fours": 2, "sixes": 0, "dots": 1},
     {"name": "Roston Chase",     "cls": "spin",   "type": "Off-spin",
      "team_r": 18, "team_w": 0, "team_ov": "2.0",
