@@ -871,27 +871,27 @@ div[data-testid="stMainBlockContainer"] {
 bowlers_row1 = [
     {"name": "Shamar Joseph",    "cls": "fast",   "type": "Right-arm Fast",
      "team_r": 42, "team_w": 2, "team_ov": "4.0",
-     "runs": 22, "balls": 11, "fours": 3, "sixes": 0, "dots": 2},
+     "runs": 12, "balls": 8, "fours": 2, "sixes": 0, "dots": 2},
     {"name": "Jason Holder",     "cls": "medium", "type": "Fast-medium",
      "team_r": 38, "team_w": 2, "team_ov": "4.0",
-     "runs": 17, "balls": 9,  "fours": 3, "sixes": 0, "dots": 2},
+     "runs": 17, "balls": 8,  "fours": 3, "sixes": 0, "dots": 0},
     {"name": "Romario Shepherd", "cls": "fast",   "type": "Right-arm Fast",
      "team_r": 34, "team_w": 0, "team_ov": "2.2",
-     "runs": 16, "balls": 8,  "fours": 1, "sixes": 1, "dots": 1},
+     "runs": 24, "balls": 9,  "fours": 2, "sixes": 2, "dots": 1},
     {"name": "Matthew Forde",    "cls": "medium", "type": "Right-arm Medium",
      "team_r": 22, "team_w": 0, "team_ov": "3.0",
-     "runs": 14, "balls": 8,  "fours": 2, "sixes": 0, "dots": 3},
+     "runs": 7, "balls": 9,  "fours": 1, "sixes": 0, "dots": 4},
 ]
 bowlers_row2 = [
     {"name": "Akeal Hosein",     "cls": "spin",   "type": "Left-arm Spin",
      "team_r": 22, "team_w": 1, "team_ov": "2.0",
-     "runs": 17, "balls": 8,  "fours": 1, "sixes": 2, "dots": 1},
+     "runs": 17, "balls": 5,  "fours": 1, "sixes": 2, "dots": 1},
     {"name": "Gudakesh Motie",   "cls": "spin",   "type": "Left-arm Spin",
-     "team_r": 18, "team_w": 0, "team_ov": "2.0",
-     "runs": 11, "balls": 5,  "fours": 1, "sixes": 1, "dots": 0},
+     "team_r": 18, "team_w": 0, "team_ov": "2.0,
+     "runs": 12, "balls": 7,  "fours": 2, "sixes": 0, "dots": 1},
     {"name": "Roston Chase",     "cls": "spin",   "type": "Off-spin",
      "team_r": 18, "team_w": 0, "team_ov": "2.0",
-     "runs": 0,  "balls": 3,  "fours": 0, "sixes": 0, "dots": 3},
+     "runs": 8,  "balls": 5,  "fours": 1, "sixes": 0, "dots": 0},
 ]
 
 phases = [
