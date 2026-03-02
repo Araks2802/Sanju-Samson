@@ -90,9 +90,9 @@ prog_df = pd.DataFrame({
 key_moments = [
     ("Over 3",   "🔥", "#f59e0b", "Hosein wiped",        "2 sixes + a four in the third over. Eden erupts. Samson has announced himself."),
     ("Ball 26",  "⭐", "#f5c842", "Half-century",         "Cover-driven off Motie. 50 off 26. Twelve innings of waiting, settled in one stroke."),
-    ("Over 11",  "⚠️", "#e84040", "Danger — 107/4",       "SKY gone. India needed 89 more. Samson looked at the required rate and smiled."),
-    ("Over 14",  "💎", "#a78bfa", "69 off 39",            "Tilak falls. 60 needed in 6 overs. Samson chose belief over caution."),
-    ("Ball 49",  "🚀", "#00c9a7", "Six to level scores",  "Shepherd over square leg. India level with 1 ball to spare in the over."),
+    ("Over 11",  "⚠️", "#e84040", "Danger — 101/3",       "SKY gone. India needed 95 more. Samson looked at the required rate and smiled."),
+    ("Over 14",  "💎", "#a78bfa", "69 off 39",            "Tilak falls. 55 needed in 5.2 overs. Samson chose belief over caution."),
+    ("Ball 49",  "🚀", "#00c9a7", "Six to level scores",  "Shepherd over square leg. India level with 5 balls to spare in the over."),
     ("Ball 50",  "🏆", "#f5c842", "97* — India win 🙏",   "Chips over mid-on. Kneels. Helmet off. Eyes skyward. The wait was worth it."),
 ]
 
